@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">NYTime</string>
+    <string name="action_settings">Settings</string>
+    <string name="hint">Enter search query</string>
+    <string name="search">Search</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
