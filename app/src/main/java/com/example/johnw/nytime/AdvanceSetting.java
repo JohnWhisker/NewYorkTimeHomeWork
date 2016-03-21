@@ -36,6 +36,7 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
         spField = (Spinner) findViewById(R.id.spSearchField);
         spField.setOnItemSelectedListener(this);
         List<String> categories = new ArrayList<String>();
+        
         categories.add("Arts");
         categories.add("Sports");
         categories.add("Fashion & Style");
