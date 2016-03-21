@@ -1,11 +1,12 @@
 package com.example.johnw.nytime;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 
-public class Search extends AppCompatActivity {
+public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgment.SelectionListener{
     EditText etQuery;
     String KEY = "347a6b323c94cbf625b8de7c59a23a2d:18:74723396";
     GridView gvResult;
@@ -37,6 +38,9 @@ public class Search extends AppCompatActivity {
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
     ActionBar actionBar;
+    String sortBy;
+
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -51,6 +55,7 @@ public class Search extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setupViews();
+        
         actionBar = getSupportActionBar();
         getSupportActionBar().setTitle("News Search");
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -65,7 +70,12 @@ public class Search extends AppCompatActivity {
         articles = new ArrayList<Article>();
         adapter = new ArticleArrayAdapter(this, articles);
         gvResult.setAdapter(adapter);
-
+        gvResult.setOnScrollListener(new InfiniteScrollListener(5) {
+            @Override
+            public void loadMore(int page, int totalItemsCount) {
+                getNews(page);
+            }
+        });
         gvResult.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -93,6 +103,7 @@ public class Search extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.sort:
                 showEditDialog();
+
                 return true;
             case R.id.setting:
                 return true;
@@ -104,37 +115,70 @@ public class Search extends AppCompatActivity {
     }
 
     private void showEditDialog() {
-        FragmentManager fm = getSupportFragmentManager();
-        SortFragment editNameDialog = SortFragment.newInstance("Some Title");
-        editNameDialog.show(fm, "fragment_edit_name");
+        FragmentManager manager = getFragmentManager();
+        SingleChoiceDialogFrqgment dialog = new SingleChoiceDialogFrqgment();
+
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList(SingleChoiceDialogFrqgment.DATA,getItems());
+        bundle.putInt(SingleChoiceDialogFrqgment.SELECTED, -1);
+        dialog.setArguments(bundle);
+        dialog.show(manager, "Dialog");
     }
 
-    public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
-        AsyncHttpClient client = new AsyncHttpClient();
-        String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
-        RequestParams params = new RequestParams();
-        params.put("api-key", KEY);
-        params.put("page", 0);
-        params.put("q", query);
+    private ArrayList<String> getItems(){
+        ArrayList<String> ret_val = new ArrayList<String>();
+        ret_val.add("Sort by oldest");
+        ret_val.add("Sort by newest");
+        return ret_val;
+    }
+public RequestParams getParams(int page){
+    String query = etQuery.getText().toString();
+    RequestParams params = new RequestParams();
+    params.put("api-key", KEY);
+    params.put("page", String.valueOf(page));
+    params.put("q", query);
+    if(!TextUtils.isEmpty(sortBy)){
+        params.put("sort",sortBy);
+    }
+    return params;
 
-        client.get(url, params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray articleJSONresult = null;
-                try {
-                    articleJSONresult = response.getJSONObject("response").getJSONArray("docs");
-                    adapter.addAll(Article.fromJSONArray(articleJSONresult));
+}
+    public void getNews(int page){
+            AsyncHttpClient client = new AsyncHttpClient();
+            String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
+            client.get(url,getParams(page), new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    JSONArray articleJSONresult = null;
+                    try {
 
-                    Log.d("DEBUG", articles.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                        articleJSONresult = response.getJSONObject("response").getJSONArray("docs");
+                       adapter.addAll(Article.fromJSONArray(articleJSONresult));
+                        Log.d("DEBUG", articles.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
+            });
 
-            }
-        });
+    }
+    public void onArticleSearch(View view) {
+        adapter.clear();
+        getNews(0);
 
     }
 
 
+    @Override
+    public void selectItem(int position) {
+        if(position==0)  sortBy = "oldest";
+
+        else if( position ==1) sortBy = "newest";
+
+        else sortBy ="";
+
+
+
+    }
 }
