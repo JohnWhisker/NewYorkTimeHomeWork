@@ -3,17 +3,18 @@ package com.example.johnw.nytime;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
 
 import com.google.android.gms.appindexing.AppIndex;
@@ -31,15 +32,19 @@ import java.util.ArrayList;
 import cz.msebera.android.httpclient.Header;
 
 public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgment.SelectionListener{
-    EditText etQuery;
+
+
     String KEY = "347a6b323c94cbf625b8de7c59a23a2d:18:74723396";
     GridView gvResult;
-    Button btnSearch;
+
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
     ActionBar actionBar;
     String sortBy;
-
+    Menu menu;
+    String beginDate,endDate,field;
+    public String query;
+    private RecyclerViewUtils.ShowHideToolbarOnScrollingListener showHideToolbarListener;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -54,18 +59,20 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
         setContentView(R.layout.activity_search);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
         setupViews();
-        
         actionBar = getSupportActionBar();
+
         getSupportActionBar().setTitle("News Search");
+        actionBar.setTitle("News Search");
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client2 = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void setupViews() {
-        etQuery = (EditText) findViewById(R.id.etQuerry);
-        btnSearch = (Button) findViewById(R.id.btnSearch);
+
         gvResult = (GridView) findViewById(R.id.gvResult);
         articles = new ArrayList<Article>();
         adapter = new ArticleArrayAdapter(this, articles);
@@ -76,6 +83,7 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
                 getNews(page);
             }
         });
+
         gvResult.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -91,10 +99,34 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_search, menu);
-        return true;
-    }
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_search, menu);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                setQuery(query);
+                adapter.clear();
+                getNews(0);
+                searchView.clearFocus();
+                return true;
+            }
 
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+
+        });
+        MenuItemCompat.expandActionView(searchItem);
+        searchView.requestFocus();
+        this.menu = menu;
+        return super.onCreateOptionsMenu(menu);
+    }
+    public void setQuery(String query){
+        this.query = query;
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -102,11 +134,28 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.sort:
+                adapter.clear();
                 showEditDialog();
-
                 return true;
             case R.id.setting:
+                MenuItem itemSort= menu.findItem(R.id.sort);
+                MenuItem itemSearch = menu.findItem(R.id.search);
+                MenuItem itemAdvance = menu.findItem(R.id.advance);
+                if(itemSort.isVisible())      {
+                    actionBar.setTitle("News Search");
+                    itemSort.setVisible(false);
+                    itemAdvance.setVisible(false);
+                    itemSearch.setVisible(true);
+                }else{
+                    actionBar.setTitle("Settings");
+                    itemAdvance.setVisible(true);
+                    itemSort.setVisible(true);
+                    itemSearch.setVisible(false);
+                }
                 return true;
+            case R.id.advance:
+                Intent intent = new Intent(this,AdvanceSetting.class);
+                startActivityForResult(intent,0);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -117,7 +166,6 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
     private void showEditDialog() {
         FragmentManager manager = getFragmentManager();
         SingleChoiceDialogFrqgment dialog = new SingleChoiceDialogFrqgment();
-
         Bundle bundle = new Bundle();
         bundle.putStringArrayList(SingleChoiceDialogFrqgment.DATA,getItems());
         bundle.putInt(SingleChoiceDialogFrqgment.SELECTED, -1);
@@ -132,11 +180,19 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
         return ret_val;
     }
 public RequestParams getParams(int page){
-    String query = etQuery.getText().toString();
     RequestParams params = new RequestParams();
     params.put("api-key", KEY);
     params.put("page", String.valueOf(page));
     params.put("q", query);
+    if(!beginDate.isEmpty()&& beginDate!=null){
+        params.put("begin_date",beginDate);
+    }
+    if(!endDate.isEmpty()&& endDate!=null){
+        params.put("end_date",endDate);
+    }
+    if(!field.isEmpty()&& field!=null){
+        params.put("fq",field);
+    }
     if(!TextUtils.isEmpty(sortBy)){
         params.put("sort",sortBy);
     }
@@ -151,7 +207,6 @@ public RequestParams getParams(int page){
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                     JSONArray articleJSONresult = null;
                     try {
-
                         articleJSONresult = response.getJSONObject("response").getJSONArray("docs");
                        adapter.addAll(Article.fromJSONArray(articleJSONresult));
                         Log.d("DEBUG", articles.toString());
@@ -163,12 +218,22 @@ public RequestParams getParams(int page){
             });
 
     }
-    public void onArticleSearch(View view) {
-        adapter.clear();
-        getNews(0);
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 0) {
+            if(resultCode == RESULT_OK){
+                Bundle bundle = data.getBundleExtra("DATA");
+                beginDate="";
+                endDate="";
+                field = "";
+                if(bundle.containsKey("Begin Date")) beginDate = String.valueOf(bundle.get("Begin Date"));
+                if(bundle.containsKey("End Date"))endDate = String.valueOf(bundle.get("End Date"));
+                if(bundle.containsKey("Field"))field = String.valueOf(bundle.get("Field"));
+                adapter.clear();
+                getNews(0);
+            }
+        }
     }
-
 
     @Override
     public void selectItem(int position) {
