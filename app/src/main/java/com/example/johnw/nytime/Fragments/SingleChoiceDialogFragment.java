@@ -1,4 +1,4 @@
-package com.example.johnw.nytime;
+package com.example.johnw.nytime.Fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -13,13 +13,16 @@ import java.util.List;
 /**
  * Created by JohnWhisker on 3/20/16.
  */
-public class SingleChoiceDialogFrqgment extends DialogFragment {
+public class SingleChoiceDialogFragment extends DialogFragment {
+
+   // VARIABLES DEFINE
     public static final String DATA = "items";
     public static final String SELECTED = "selected";
     private SelectionListener listener;
 
+    //METHOD DEFINES
     public interface  SelectionListener{
-        public void selectItem(int position);
+         void selectItem(int position);
     }
     @Override
     public void onAttach(Activity activity) {
@@ -56,7 +59,6 @@ public class SingleChoiceDialogFrqgment extends DialogFragment {
             if(listener!=null){
                 listener.selectItem(which);
             }
-
         }
     };
 }

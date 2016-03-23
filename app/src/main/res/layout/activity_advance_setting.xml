@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    tools:context="com.example.johnw.nytime.AdvanceSetting">
+    tools:context=".Activities.AdvanceSettingActivity">
 
 
     <LinearLayout
@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:onClick="beginDateOnClick"
-                android:text="Date"
+                android:text="Press here to set the date"
                 android:id="@+id/tvBeginDate" />
 
             <Switch
@@ -65,7 +65,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Date"
+                android:text="Press here to set the date"
+                android:clickable="true"
+                android:onClick="endDateOnClick"
                 android:id="@+id/tvEndDate" />
 
             <Switch

@@ -1,4 +1,4 @@
-package com.example.johnw.nytime;
+package com.example.johnw.nytime.Activities;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -14,17 +14,23 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.johnw.nytime.R;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class AdvanceSetting extends Activity implements AdapterView.OnItemSelectedListener {
+public class AdvanceSettingActivity extends Activity implements AdapterView.OnItemSelectedListener {
+
+    // VARIABLES DEFINE
     TextView tvBeginDate,tvEndDate;
     Switch swBeginDate,swEndDate,swField;
     int mYear,mMonth,mDay;
     Spinner spField;
     ActionBar actionBar;
     String spValue,beginDateValue,endDateValue;
+
+    // INITIALIZE FUNCTIONS
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final Calendar c = Calendar.getInstance();
@@ -46,6 +52,9 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spField.setAdapter(dataAdapter);
     }
+
+    // MAIN FUNCTIONS
+
     public String convertDateTime(int year,int month,int day){
         String y,m,d;
         y = String.valueOf(year);
@@ -55,6 +64,7 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
                 else d = String.valueOf(day);
         return y+m+d;
     }
+
     public void beginDateOnClick(View v){
         DatePickerDialog dpd = new DatePickerDialog(this,
                 new DatePickerDialog.OnDateSetListener() {
@@ -70,9 +80,8 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
                     }
                 }, mYear, mMonth, mDay);
         dpd.show();
-
-
     }
+
     public void endDateOnClick(View v){
         DatePickerDialog dpd = new DatePickerDialog(this,
                 new DatePickerDialog.OnDateSetListener() {
@@ -88,10 +97,9 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
                     }
                 }, mYear, mMonth, mDay);
         dpd.show();
-
     }
-    public void cancelOnClick(View v){
 
+    public void cancelOnClick(View v){
         finish();
     }
 
@@ -109,19 +117,14 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
         Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
         finish();
     }
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         swField = (Switch) findViewById(R.id.swField);
         swField.setChecked(true);
         spValue = parent.getItemAtPosition(position).toString();
-
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
-    }
-
-
-
+    public void onNothingSelected(AdapterView<?> parent) { }
 }

@@ -1,17 +1,20 @@
-package com.example.johnw.nytime;
+package com.example.johnw.nytime.Activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.example.johnw.nytime.Types.Article;
+import com.example.johnw.nytime.R;
+
 public class ArticleActivity extends AppCompatActivity {
 
+    // INITIALIZE FUNCTION
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article);
-
         Article article = (Article)getIntent().getSerializableExtra("article");
         WebView webview = (WebView) findViewById(R.id.wvArticle);
         webview.setWebViewClient(new WebViewClient()
@@ -24,4 +27,5 @@ public class ArticleActivity extends AppCompatActivity {
         });
         webview.loadUrl(article.getWeburl());
     }
+
 }

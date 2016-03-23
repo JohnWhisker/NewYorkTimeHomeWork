@@ -1,4 +1,4 @@
-package com.example.johnw.nytime;
+package com.example.johnw.nytime.Types;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
  */
 public class Article implements Serializable {
 
-
+    // VARIABLES DEFINE
     public String getHeadline() {
         return headline;
     }
@@ -24,10 +24,12 @@ public class Article implements Serializable {
     public String getWeburl() {
         return webUrl;
     }
+
     String webUrl;
     String thumbnail;
     String headline;
 
+    // METHOD DEFINE
     public Article (JSONObject jsonObject){
         try{
             this.webUrl = jsonObject.getString("web_url");
@@ -54,6 +56,5 @@ public class Article implements Serializable {
         }
         return result;
     }
-
 
 }

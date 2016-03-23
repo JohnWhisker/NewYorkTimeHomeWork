@@ -1,4 +1,4 @@
-package com.example.johnw.nytime;
+package com.example.johnw.nytime.Adapters;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -9,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.johnw.nytime.Types.Article;
+import com.example.johnw.nytime.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 /**
  * Created by johnw on 3/19/2016.
  */
+// METHODS DEFINE
 public class ArticleArrayAdapter extends ArrayAdapter<Article>{
     public ArticleArrayAdapter(Context context, List<Article>articles){
         super(context,android.R.layout.simple_list_item_1,articles);
