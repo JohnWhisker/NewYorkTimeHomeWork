@@ -1,10 +1,15 @@
 package com.example.johnw.nytime;
 
 import android.app.FragmentManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -27,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
@@ -36,7 +42,6 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
 
     String KEY = "347a6b323c94cbf625b8de7c59a23a2d:18:74723396";
     GridView gvResult;
-
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
     ActionBar actionBar;
@@ -59,8 +64,10 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
         setContentView(R.layout.activity_search);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
+        beginDate = "";
+        endDate = "";
+        field = "";
+        sortBy = "";
         setupViews();
         actionBar = getSupportActionBar();
 
@@ -71,6 +78,26 @@ public class Search extends AppCompatActivity implements SingleChoiceDialogFrqgm
         client2 = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    // NETWORK FUNCTION
+
+    public boolean isNetworkAvailable(){
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+    public boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int     exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        } catch (IOException e)          { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+        return false;
+    }
+    
     private void setupViews() {
 
         gvResult = (GridView) findViewById(R.id.gvResult);
@@ -200,6 +227,7 @@ public RequestParams getParams(int page){
 
 }
     public void getNews(int page){
+        if(isNetworkAvailable()&&isOnline()){
             AsyncHttpClient client = new AsyncHttpClient();
             String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
             client.get(url,getParams(page), new JsonHttpResponseHandler() {
@@ -216,6 +244,24 @@ public RequestParams getParams(int page){
 
                 }
             });
+        }
+        else {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("No Internet")
+                    .setMessage("Would you like to retry")
+                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            getNews(0);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    })
+                    .show();
+        }
 
     }
     @Override

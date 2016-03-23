@@ -1,5 +1,6 @@
 package com.example.johnw.nytime;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -22,6 +23,7 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
     Switch swBeginDate,swEndDate,swField;
     int mYear,mMonth,mDay;
     Spinner spField;
+    ActionBar actionBar;
     String spValue,beginDateValue,endDateValue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,7 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
         mDay = c.get(Calendar.DAY_OF_MONTH);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_advance_setting);
+        actionBar = getActionBar();
         tvBeginDate = (TextView) findViewById(R.id.tvBeginDate);
         tvEndDate = (TextView) findViewById(R.id.tvEndDate);
         spField = (Spinner) findViewById(R.id.spSearchField);
@@ -118,5 +121,7 @@ public class AdvanceSetting extends Activity implements AdapterView.OnItemSelect
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
+
+
 
 }
